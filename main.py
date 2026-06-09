@@ -1,6 +1,8 @@
 from engine import monitor_engine
 
-print("🚀 SYSTEM BOOT")
+def main():
+    print("🚀 SYSTEM BOOT")
+    monitor_engine()
 
 if __name__ == "__main__":
-    monitor_engine()
+    main()
