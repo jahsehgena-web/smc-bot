@@ -1,32 +1,30 @@
-# logger.py
-
 import json
 from datetime import datetime, timezone
 
-LOG_FILE = "signals.json"
+FILE = "signals.json"
 
-class SignalLogger:
-    def __init__(self):
-        try:
-            with open(LOG_FILE, "r") as f:
-                self.data = json.load(f)
-        except:
-            self.data = []
+def load():
+    try:
+        with open(FILE, "r") as f:
+            return json.load(f)
+    except:
+        return []
 
-    def save(self):
-        with open(LOG_FILE, "w") as f:
-            json.dump(self.data, f, indent=2)
+def save(data):
+    with open(FILE, "w") as f:
+        json.dump(data, f, indent=2)
 
-    def log(self, signal):
-        entry = {
-            **signal,
-            "id": len(self.data) + 1,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "status": "PENDING"
-        }
+def log_signal(signal):
+    data = load()
 
-        self.data.append(entry)
-        self.save()
+    entry = {
+        **signal,
+        "id": len(data) + 1,
+        "time": datetime.now(timezone.utc).isoformat(),
+        "status": "PENDING"
+    }
 
-        print(f"📝 Logged signal #{entry['id']}")
-        return entry
+    data.append(entry)
+    save(data)
+
+    print(f"📝 Logged #{entry['id']} {entry['pair']} {entry['signal']}")
