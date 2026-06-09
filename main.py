@@ -1,48 +1,36 @@
-import os
-import time
 import threading
-import telebot
+import time
 
-from logger import SignalLogger
+from engine import monitor_with_logging
 from evaluator import SignalEvaluator
-from engine import analyze
+from logger import SignalLogger
 
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-CHAT_ID = int(os.getenv("TELEGRAM_CHAT_ID"))
-
-bot = telebot.TeleBot(BOT_TOKEN)
 logger = SignalLogger()
+evaluator = SignalEvaluator(logger)
 
-PAIRS = {
-    "EURUSD=X": "EURUSD",
-    "GBPUSD=X": "GBPUSD",
-    "BTC-USD": "BTCUSD",
-    "XAUUSD=X": "GOLD"
-}
+# =========================
+# RUN ENGINE (signals)
+# =========================
+def run_engine():
+    print("🚀 Engine started")
+    monitor_with_logging()
 
-def fetch(symbol):
-    import yfinance as yf
-    df = yf.download(symbol, interval="15m", period="5d")
-    return df
+# =========================
+# RUN EVALUATOR (tracking)
+# =========================
+def run_evaluator():
+    print("📊 Evaluator started")
+    evaluator.run()
 
-def monitor():
-    while True:
-        for symbol, name in PAIRS.items():
-            df = fetch(symbol)
-            if df is None or df.empty:
-                continue
+# =========================
+# START SYSTEM
+# =========================
+if __name__ == "__main__":
+    t1 = threading.Thread(target=run_engine)
+    t2 = threading.Thread(target=run_evaluator)
 
-            signal = analyze(df, name)
+    t1.start()
+    t2.start()
 
-            if signal:
-                logger.log_signal(signal)
-                bot.send_message(CHAT_ID, f"📊 SIGNAL\n{signal}")
-
-        time.sleep(60)
-
-evaluator = SignalEvaluator(logger, fetch, bot, CHAT_ID)
-
-threading.Thread(target=monitor, daemon=True).start()
-threading.Thread(target=evaluator.run, daemon=True).start()
-
-bot.infinity_polling()
+    t1.join()
+    t2.join()
