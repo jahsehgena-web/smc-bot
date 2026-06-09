@@ -1,36 +1,18 @@
+# main.py
+
 import threading
-import time
+from engine import monitor_engine
+from evaluator import run_evaluator
 
-from engine import monitor_with_logging
-from evaluator import SignalEvaluator
-from logger import SignalLogger
+print("🚀 System starting...")
 
-logger = SignalLogger()
-evaluator = SignalEvaluator(logger)
+t1 = threading.Thread(target=monitor_engine, daemon=True)
+t2 = threading.Thread(target=run_evaluator, daemon=True)
 
-# =========================
-# RUN ENGINE (signals)
-# =========================
-def run_engine():
-    print("🚀 Engine started")
-    monitor_with_logging()
+t1.start()
+t2.start()
 
-# =========================
-# RUN EVALUATOR (tracking)
-# =========================
-def run_evaluator():
-    print("📊 Evaluator started")
-    evaluator.run()
+print("✅ System running...")
 
-# =========================
-# START SYSTEM
-# =========================
-if __name__ == "__main__":
-    t1 = threading.Thread(target=run_engine)
-    t2 = threading.Thread(target=run_evaluator)
-
-    t1.start()
-    t2.start()
-
-    t1.join()
-    t2.join()
+while True:
+    pass
