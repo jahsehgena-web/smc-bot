@@ -1,18 +1,13 @@
-# main.py
-
 import threading
 from engine import monitor_engine
-from evaluator import run_evaluator
 
-print("🚀 System starting...")
+def start():
+    print("🚀 Engine started")
 
-t1 = threading.Thread(target=monitor_engine, daemon=True)
-t2 = threading.Thread(target=run_evaluator, daemon=True)
+    threading.Thread(target=monitor_engine, daemon=True).start()
 
-t1.start()
-t2.start()
+    while True:
+        pass  # keep Railway container alive
 
-print("✅ System running...")
-
-while True:
-    pass
+if __name__ == "__main__":
+    start()
