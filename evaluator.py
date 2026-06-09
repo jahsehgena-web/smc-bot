@@ -1,63 +1,32 @@
+# evaluator.py
+
 import time
-import yfinance as yf
-from datetime import datetime, timezone
+from engine import signal_queue
 from logger import SignalLogger
 
-class SignalEvaluator:
-    def __init__(self, logger: SignalLogger):
-        self.logger = logger
+logger = SignalLogger()
 
-    def get_price(self, symbol):
-        try:
-            df = yf.download(symbol, interval="5m", period="1d", progress=False)
-            if df is not None and not df.empty:
-                return float(df["Close"].iloc[-1])
-        except:
-            return None
+def evaluate_signal(signal):
+    print(f"📊 Evaluating: {signal['pair']} {signal['signal']}")
 
-    def evaluate(self, signal):
-        symbol = signal["symbol"]
-        price = self.get_price(symbol)
+    # SIMPLE MOCK EVALUATION LOGIC
+    # replace with your real price checking later
 
-        if price is None:
-            return
+    result = signal
+    result["status"] = "EXECUTED"
 
-        entry = signal["entry"]
-        sl    = signal["sl"]
-        tp1   = signal["tp1"]
-        tp2   = signal["tp2"]
+    logger.log(result)
 
-        outcome = None
+    print(f"✅ Evaluated + logged: {signal['pair']}")
+    return result
 
-        # BUY logic
-        if signal["type"] == "BUY":
-            if price <= sl:
-                outcome = "SL"
-            elif price >= tp2:
-                outcome = "TP2"
-            elif price >= tp1:
-                outcome = "TP1"
 
-        # SELL logic
-        if signal["type"] == "SELL":
-            if price >= sl:
-                outcome = "SL"
-            elif price <= tp2:
-                outcome = "TP2"
-            elif price <= tp1:
-                outcome = "TP1"
+def run_evaluator():
+    print("📊 Evaluator started")
 
-        if outcome:
-            self.logger.update_status(signal["id"], outcome)
-            print(f"[EVALUATED] {symbol} #{signal['id']} -> {outcome}")
+    while True:
+        if not signal_queue.empty():
+            signal = signal_queue.get()
+            evaluate_signal(signal)
 
-    def run(self):
-        print("[EVALUATOR STARTED]")
-
-        while True:
-            open_signals = self.logger.get_open_signals()
-
-            for signal in open_signals:
-                self.evaluate(signal)
-
-            time.sleep(60)
+        time.sleep(2)
